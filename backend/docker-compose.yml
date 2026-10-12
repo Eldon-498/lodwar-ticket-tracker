@@ -1,0 +1,16 @@
+services:
+  lodwar-mysql:
+    image: mysql:8.0
+    container_name: lodwar-mysql
+    environment:
+      - MYSQL_DATABASE=${LODWAR_MYSQL_DB:-lodwar}
+      - MYSQL_USER=${LODWAR_MYSQL_USER:-lodwar}
+      - MYSQL_PASSWORD=${LODWAR_MYSQL_PASSWORD:-lodwar}
+      - MYSQL_ROOT_PASSWORD=${LODWAR_MYSQL_ROOT_PASSWORD:-root}
+    ports:
+      - ${LODWAR_MYSQL_PORT:-3306}:3306
+    networks:
+      - net
+
+networks:
+  net:

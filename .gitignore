@@ -1,0 +1,18 @@
+# Root-level ignores for mono-repo; sub-folders have their own .gitignore too.
+.DS_Store
+Thumbs.db
+*.log
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Claude Code harness state
+.claude/
+
+# OS temp
+desktop.ini
+
+# Assignment brief (kept locally, not in repo)
+*.docx
