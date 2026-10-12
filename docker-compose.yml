@@ -1,0 +1,60 @@
+## Full-stack bring-up: MySQL + Spring Boot API + nginx-served Angular SPA.
+## Dev loop (just the DB) still lives in backend/docker-compose.yml.
+
+services:
+
+  mysql:
+    image: mysql:8.0
+    container_name: lodwar-mysql
+    environment:
+      - MYSQL_DATABASE=${LODWAR_MYSQL_DB:-lodwar}
+      - MYSQL_USER=${LODWAR_MYSQL_USER:-lodwar}
+      - MYSQL_PASSWORD=${LODWAR_MYSQL_PASSWORD:-lodwar}
+      - MYSQL_ROOT_PASSWORD=${LODWAR_MYSQL_ROOT_PASSWORD:-root}
+    ports:
+      - ${LODWAR_MYSQL_PORT:-3307}:3306
+    volumes:
+      - ./backend/docker/mysql-init:/docker-entrypoint-initdb.d:ro
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${LODWAR_MYSQL_ROOT_PASSWORD:-root}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - net
+
+  backend:
+    build:
+      context: ./backend
+    container_name: lodwar-backend
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/${LODWAR_MYSQL_DB:-lodwar}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      - SPRING_DATASOURCE_USERNAME=${LODWAR_MYSQL_USER:-lodwar}
+      - SPRING_DATASOURCE_PASSWORD=${LODWAR_MYSQL_PASSWORD:-lodwar}
+      - CORS_DOMAIN=http://localhost
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - ${LODWAR_PORT:-8082}:8082
+    networks:
+      - net
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: lodwar-frontend
+    depends_on:
+      - backend
+    ports:
+      - ${LODWAR_UI_PORT:-8080}:80
+    networks:
+      - net
+
+volumes:
+  mysql-data:
+
+networks:
+  net:

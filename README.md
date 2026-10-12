@@ -18,7 +18,15 @@ Mono-repo layout:
 
 ## Quickstart
 
-Open two terminals.
+### Option A — one command (full stack in Docker)
+
+```bash
+docker-compose up --build
+```
+
+MySQL on `localhost:3307`, API on `localhost:8082`, UI on **http://localhost:8080**. The frontend container runs nginx and proxies `/api/` to the backend container by service name — nothing is coupled to `localhost`.
+
+### Option B — local dev loop (hot reload, two terminals)
 
 ### 1. Backend
 
