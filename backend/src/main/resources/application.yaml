@@ -1,0 +1,21 @@
+server:
+  port: ${LODWAR_PORT:8082}
+
+spring:
+  profiles:
+    active: dev
+  application:
+    name: "Lodwar Ticket Tracker"
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    locations: classpath:migrations
+    validate-migration-naming: true
+
+cors:
+  domain: http://localhost:4200
