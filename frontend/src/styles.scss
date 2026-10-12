@@ -1,17 +1,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  --app-bg: #0f172a;
-  --app-surface: #1e293b;
-  --app-surface-2: #273449;
-  --app-border: #334155;
-  --app-text: #f1f5f9;
-  --app-text-muted: #94a3b8;
-  --app-primary: #3b82f6;
-  --app-primary-hover: #2563eb;
+  --app-bg: #f8fafc;
+  --app-surface: #ffffff;
+  --app-surface-2: #f1f5f9;
+  --app-border: #e2e8f0;
+  --app-text: #0f172a;
+  --app-text-muted: #64748b;
+  --app-primary: #2563eb;
+  --app-primary-hover: #1d4ed8;
   --app-success: #10b981;
-  --app-warning: #f59e0b;
-  --app-danger: #ef4444;
+  --app-warning: #d97706;
+  --app-danger: #dc2626;
+  --app-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.06);
 }
 
 * {
@@ -44,10 +45,10 @@ a {
   letter-spacing: 0.05em;
 }
 
-.chip-status-open       { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
-.chip-status-in_progress{ background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
-.chip-status-closed     { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+.chip-status-open       { background: #dbeafe; color: #1d4ed8; }
+.chip-status-in_progress{ background: #fef3c7; color: #b45309; }
+.chip-status-closed     { background: #d1fae5; color: #047857; }
 
-.chip-priority-low      { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; }
-.chip-priority-medium   { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
-.chip-priority-high     { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+.chip-priority-low      { background: #f1f5f9; color: #475569; }
+.chip-priority-medium   { background: #dbeafe; color: #1d4ed8; }
+.chip-priority-high     { background: #fee2e2; color: #b91c1c; }
