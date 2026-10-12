@@ -20,7 +20,7 @@ export class TicketListComponent implements OnInit {
   @Output() statusChanged = new EventEmitter<void>();
 
   tickets: Ticket[] = [];
-  totalElements = 0;
+  totalItems = 0;
   totalPages = 0;
   page = 0;
   size = 10;
@@ -101,7 +101,7 @@ export class TicketListComponent implements OnInit {
     ).subscribe({
       next: (data) => {
         this.tickets = data.content;
-        this.totalElements = data.totalElements;
+        this.totalItems = data.totalItems;
         this.totalPages = data.totalPages;
       },
       error: () => {

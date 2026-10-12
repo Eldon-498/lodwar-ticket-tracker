@@ -1,11 +1,8 @@
 package ke.co.ssd.lodwar.config;
 
-import ke.co.ssd.lodwar.exceptions.EntityNotFoundException;
 import ke.co.ssd.lodwar.exceptions.ServiceException;
-import ke.co.ssd.lodwar.exceptions.UnprocessableEntityException;
-import ke.co.ssd.lodwar.exceptions.response.ErrorMessageResponseModel;
 import ke.co.ssd.lodwar.exceptions.response.ErrorResponseEnum;
-import ke.co.ssd.lodwar.exceptions.response.ErrorResponseModel;
+import ke.co.ssd.lodwar.utils.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -16,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
@@ -28,26 +24,15 @@ import java.util.stream.Collectors;
 public class ExceptionHandlerConfig extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(ServiceException.class)
-    public ResponseEntity<Object> handleServiceException(final ServiceException ex, final WebRequest request) {
+    public ResponseEntity<Object> handleServiceException(final ServiceException ex) {
 
-        if (ex instanceof EntityNotFoundException) {
-
-            return handleExceptionInternal(ex, buildErrorResponse(ex), new HttpHeaders(), HttpStatus.NOT_FOUND, request);
-        }
-
-        if (ex instanceof UnprocessableEntityException) {
-
-            return handleExceptionInternal(ex, buildErrorResponse(ex), new HttpHeaders(), HttpStatus.UNPROCESSABLE_ENTITY, request);
-        }
-
-        return handleExceptionInternal(ex, buildErrorResponse(ex), new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+        return ResponseEntity.ok(buildErrorResponse(ex.retrieveExceptionCode(), ex.getMessage()));
     }
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Object> handleIllegalArgumentException(final IllegalArgumentException exception) {
+    public ResponseEntity<Object> handleIllegalArgumentException(final IllegalArgumentException ex) {
 
-        return new ResponseEntity<>(buildErrorResponse(exception.getMessage()), HttpStatus.BAD_REQUEST);
+        return ResponseEntity.ok(buildErrorResponse(ErrorResponseEnum.ERROR_DEFAULT_MESSAGE, ex.getMessage()));
     }
 
     @Override
@@ -60,29 +45,21 @@ public class ExceptionHandlerConfig extends ResponseEntityExceptionHandler {
             .map(error -> error.getField() + " " + error.getDefaultMessage())
             .collect(Collectors.joining(", "));
 
-        final ErrorResponseModel errorResponseModel = ErrorResponseModel.of(ErrorResponseEnum.TICKET_VALIDATION_FAILED, message);
-
-        return new ResponseEntity<>(errorResponseModel, HttpStatus.BAD_REQUEST);
+        return ResponseEntity.ok(buildErrorResponse(ErrorResponseEnum.TICKET_VALIDATION_FAILED, message));
     }
 
     @ExceptionHandler(Throwable.class)
-    public ResponseEntity<Object> handleThrowable(final Throwable exception) {
+    public ResponseEntity<Object> handleThrowable(final Throwable ex) {
 
-        log.error(ExceptionUtils.getStackTrace(exception));
+        log.error(ExceptionUtils.getStackTrace(ex));
 
-        return new ResponseEntity<>(buildErrorResponse(exception.getClass().getName()), HttpStatus.INTERNAL_SERVER_ERROR);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(buildErrorResponse(ErrorResponseEnum.ERROR_DEFAULT_MESSAGE, ex.getClass().getName()));
     }
 
-    private ErrorResponseModel buildErrorResponse(final ServiceException exception) {
+    private ApiResponse<Object> buildErrorResponse(final ErrorResponseEnum code, final String message) {
 
-        return ErrorResponseModel.of(exception.retrieveExceptionCode(), exception.getMessage());
-    }
-
-    private ErrorMessageResponseModel buildErrorResponse(final String message) {
-
-        return ErrorMessageResponseModel.builder()
-            .message(message)
-            .build();
+        return ApiResponse.fail(code.getCode(), message, null);
     }
 
 }

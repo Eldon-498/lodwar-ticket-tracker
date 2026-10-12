@@ -68,27 +68,44 @@ Base path: `/api`
 | PATCH  | `/tickets/{id}`            | Update a ticket's `status` and/or `priority`            |
 | GET    | `/tickets/stats`           | Count of tickets grouped by status                      |
 
-**Ticket shape**
+**Response envelope** — every endpoint returns the same `ApiResponse<T>` wrapper. `status.code === 1` means success; anything else is an error, with `data` set to `null`:
 
 ```json
 {
-  "id": 1,
-  "title": "Printer offline",
-  "description": "Second-floor printer unreachable",
-  "status": "OPEN",            // OPEN | IN_PROGRESS | CLOSED
-  "priority": "HIGH",          // LOW | MEDIUM | HIGH
-  "createdAt": "2026-10-12T20:41:22.358Z",
-  "updatedAt": "2026-10-12T20:41:22.358Z"
+  "status": { "code": 1, "message": "Ticket created successfully." },
+  "data": {
+    "id": 1,
+    "title": "Printer offline",
+    "description": "Second-floor printer unreachable",
+    "status": "OPEN",
+    "priority": "HIGH",
+    "createdAt": "2026-10-12T20:41:22.358Z",
+    "updatedAt": "2026-10-12T20:41:22.358Z"
+  },
+  "totalItems": null, "totalPages": null, "currentPage": null, "pageSize": null
 }
 ```
 
-**Error shape** (uniform envelope from the global `@RestControllerAdvice`):
+For list endpoints the envelope carries pagination metadata and `data` is the array:
 
 ```json
-{ "code": "2001", "message": "Ticket with id [42] not found." }
+{
+  "status": { "code": 1, "message": "Tickets fetched successfully." },
+  "data": [ { "id": 1, ... } ],
+  "totalItems": 1, "totalPages": 1, "currentPage": 0, "pageSize": 20
+}
 ```
 
-Validation errors on `POST /tickets` return 400 with the field name and reason (e.g. `"title is required"`).
+**Error envelope** — same shape, non-success `status.code`, `data: null`:
+
+```json
+{
+  "status": { "code": 2002, "message": "title is required" },
+  "data": null
+}
+```
+
+Error codes live in `ErrorResponseEnum` (`TICKET_NOT_FOUND = 2001`, `TICKET_VALIDATION_FAILED = 2002`, `TICKET_UPDATE_NO_FIELDS = 2003`). Both success and error envelopes are returned with HTTP 200 — the Angular client switches on `status.code` rather than on the HTTP status.
 
 ## Project layout
 
@@ -100,8 +117,9 @@ config/
   CorsConfig.java                      allows http://localhost:4200
   ExceptionHandlerConfig.java          global @RestControllerAdvice
 exceptions/                            ServiceException + typed subclasses
-  response/                            ErrorResponseEnum, ErrorResponseModel
+  response/ErrorResponseEnum.java      numeric error codes
 utils/
+  ApiResponse.java                     success/pagedResponse/fail envelope used by every controller
   AuditableDateEntity.java             @CreatedDate / @LastModifiedDate base
   SpecificationUtils.java              AND combiner for optional predicates
 ticket/
@@ -144,7 +162,8 @@ modules/tickets/
 - **Scope discipline.** The brief said 3–4 focused hours and "please don't over-build," so I limited features to exactly what was specified: create, list with status filter + pagination, patch status/priority, stats. No auth, no comments, no edit-title, no soft delete, no roles.
 - **Flyway owns the schema.** `ddl-auto` is `none` in all profiles — the SQL migration is the single source of truth. Hibernate's `validate` mode trips on `@Enumerated(STRING)` because MySQL stores it as `VARCHAR` while Hibernate 6 wants `ENUM`, so `validate` would create more friction than it prevents here.
 - **Enums as `VARCHAR(20)` with `@Enumerated(STRING)`.** Human-readable in the DB and safe to reorder without breaking data; the tradeoff is one more byte per row vs. an ordinal column, which doesn't matter at this scale.
-- **Pagination via Spring's `Pageable`.** `GET /tickets` accepts `page` and `size` (plus `sort`) — the standard Spring envelope ships `totalElements`, `totalPages`, etc. without extra code. The UI reads `.content` and the page metadata directly.
+- **Pagination via Spring's `Pageable`, wrapped in `ApiResponse.pagedResponse`.** `GET /tickets` accepts `page` and `size` (plus `sort`); the controller flattens Spring's `Page` into the envelope's `totalItems / totalPages / currentPage / pageSize` fields so every response has the same top-level shape.
+- **Uniform `ApiResponse<T>` envelope + `status.code`-based signaling.** Instead of mixing HTTP status codes with ad-hoc error bodies, every endpoint returns HTTP 200 with the same wrapper and signals success/failure via a numeric `status.code` (success = 1, errors use `ErrorResponseEnum`). The Angular `TicketService` unwraps `.data` once in a shared helper so components still see clean types.
 - **Specification pattern for the status filter.** Overkill for a single optional field, but it matches the repo style this project is modeled on and makes adding another filter (e.g. priority, created-after) a one-line change.
 - **Integration tests hit a real MySQL (not H2, not Testcontainers).** I started with Testcontainers but Docker Desktop on the test machine was returning a stub `/info` response that broke client discovery. Rather than ship a fragile setup, I pointed the tests at the same docker-compose MySQL used for dev, with a separate `lodwar_test` database that's created on first connect and truncated between tests. This matches the pattern used in the reference project and keeps the tests honest — same engine, same migrations, no in-memory surprises.
 - **CORS at `http://localhost:4200` only.** Enough for the SPA in dev; a prod deployment would route the UI from the same origin as the API (or lock CORS down to the real domain).

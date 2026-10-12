@@ -1,6 +1,5 @@
 package ke.co.ssd.lodwar.exceptions.response;
 
-import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 
 @Getter
@@ -16,12 +15,5 @@ public enum ErrorResponseEnum {
     ErrorResponseEnum(final Integer code) {
 
         this.code = code;
-    }
-
-    @Override
-    @JsonValue
-    public String toString() {
-
-        return Integer.toString(this.code);
     }
 }

@@ -2,6 +2,7 @@ package ke.co.ssd.lodwar.ticket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import ke.co.ssd.lodwar.exceptions.response.ErrorResponseEnum;
 import ke.co.ssd.lodwar.ticket.dto.request.CreateTicketRequestDTO;
 import ke.co.ssd.lodwar.ticket.entity.enums.TicketPriority;
 import ke.co.ssd.lodwar.ticket.entity.enums.TicketStatus;
@@ -33,6 +34,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 class TicketControllerIntegrationTest {
 
+    private static final int SUCCESS_CODE = 1;
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -49,7 +52,7 @@ class TicketControllerIntegrationTest {
     }
 
     @Test
-    void createTicket_persistsAndReturnsCreated() throws Exception {
+    void createTicket_persistsAndReturnsWrappedPayload() throws Exception {
 
         final CreateTicketRequestDTO request = new CreateTicketRequestDTO(
             "Printer offline",
@@ -59,15 +62,17 @@ class TicketControllerIntegrationTest {
         mockMvc.perform(post("/api/tickets")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.id", greaterThan(0)))
-            .andExpect(jsonPath("$.title", is("Printer offline")))
-            .andExpect(jsonPath("$.status", is(TicketStatus.OPEN.name())))
-            .andExpect(jsonPath("$.priority", is(TicketPriority.HIGH.name())));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status.code", is(SUCCESS_CODE)))
+            .andExpect(jsonPath("$.status.message", is("Ticket created successfully.")))
+            .andExpect(jsonPath("$.data.id", greaterThan(0)))
+            .andExpect(jsonPath("$.data.title", is("Printer offline")))
+            .andExpect(jsonPath("$.data.status", is(TicketStatus.OPEN.name())))
+            .andExpect(jsonPath("$.data.priority", is(TicketPriority.HIGH.name())));
     }
 
     @Test
-    void createTicket_withBlankTitle_returnsBadRequest() throws Exception {
+    void createTicket_withBlankTitle_returnsValidationErrorEnvelope() throws Exception {
 
         final ObjectNode payload = objectMapper.createObjectNode();
         payload.put("title", "");
@@ -75,11 +80,13 @@ class TicketControllerIntegrationTest {
         mockMvc.perform(post("/api/tickets")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payload.toString()))
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status.code", is(ErrorResponseEnum.TICKET_VALIDATION_FAILED.getCode())))
+            .andExpect(jsonPath("$.data").doesNotExist());
     }
 
     @Test
-    void getStats_countsGroupedByStatus() throws Exception {
+    void getStats_countsGroupedByStatusInsideDataPayload() throws Exception {
 
         createViaApi("First", TicketPriority.LOW);
         createViaApi("Second", TicketPriority.MEDIUM);
@@ -89,14 +96,16 @@ class TicketControllerIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"status\":\"CLOSED\"}"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.status", is(TicketStatus.CLOSED.name())));
+            .andExpect(jsonPath("$.status.code", is(SUCCESS_CODE)))
+            .andExpect(jsonPath("$.data.status", is(TicketStatus.CLOSED.name())));
 
         mockMvc.perform(get("/api/tickets/stats"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.total", is(3)))
-            .andExpect(jsonPath("$.byStatus.OPEN", is(2)))
-            .andExpect(jsonPath("$.byStatus.IN_PROGRESS", is(0)))
-            .andExpect(jsonPath("$.byStatus.CLOSED", is(1)));
+            .andExpect(jsonPath("$.status.code", is(SUCCESS_CODE)))
+            .andExpect(jsonPath("$.data.total", is(3)))
+            .andExpect(jsonPath("$.data.byStatus.OPEN", is(2)))
+            .andExpect(jsonPath("$.data.byStatus.IN_PROGRESS", is(0)))
+            .andExpect(jsonPath("$.data.byStatus.CLOSED", is(1)));
     }
 
     private Long createViaApi(final String title, final TicketPriority priority) throws Exception {
@@ -106,9 +115,9 @@ class TicketControllerIntegrationTest {
         final String response = mockMvc.perform(post("/api/tickets")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isCreated())
+            .andExpect(status().isOk())
             .andReturn().getResponse().getContentAsString();
 
-        return objectMapper.readTree(response).get("id").asLong();
+        return objectMapper.readTree(response).get("data").get("id").asLong();
     }
 }
