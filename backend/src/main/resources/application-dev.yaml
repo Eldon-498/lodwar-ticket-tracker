@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/${LODWAR_MYSQL_DB:lodwar}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    url: jdbc:mysql://localhost:${LODWAR_MYSQL_PORT:3307}/${LODWAR_MYSQL_DB:lodwar}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
     username: ${LODWAR_MYSQL_USER:lodwar}
     password: ${LODWAR_MYSQL_PASSWORD:lodwar}
     driver-class-name: com.mysql.cj.jdbc.Driver

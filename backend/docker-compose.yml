@@ -8,7 +8,9 @@ services:
       - MYSQL_PASSWORD=${LODWAR_MYSQL_PASSWORD:-lodwar}
       - MYSQL_ROOT_PASSWORD=${LODWAR_MYSQL_ROOT_PASSWORD:-root}
     ports:
-      - ${LODWAR_MYSQL_PORT:-3306}:3306
+      - ${LODWAR_MYSQL_PORT:-3307}:3306
+    volumes:
+      - ./docker/mysql-init:/docker-entrypoint-initdb.d:ro
     networks:
       - net
 
