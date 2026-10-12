@@ -16,3 +16,6 @@ desktop.ini
 
 # Assignment brief (kept locally, not in repo)
 *.docx
+
+# Personal onsite-prep notes (not for review)
+ONSITE_PREP.md
