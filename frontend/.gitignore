@@ -1,0 +1,28 @@
+# Angular build / test outputs
+dist/
+tmp/
+out-tsc/
+bazel-out/
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Angular cache
+.angular/cache
+.sass-cache/
+connect.lock
+coverage/
+libpeerconnection.log
+testem.log
+typings/
+
+# System
+.DS_Store
+Thumbs.db
