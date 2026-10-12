@@ -1,0 +1,143 @@
+.list-wrapper {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.list-toolbar {
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--app-border);
+  gap: 12px;
+}
+
+.filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter label {
+  font-size: 12px;
+  color: var(--app-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.filter select {
+  background: var(--app-surface-2);
+  border: 1px solid var(--app-border);
+  border-radius: 6px;
+  color: var(--app-text);
+  padding: 6px 10px;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.count {
+  color: var(--app-text-muted);
+  font-size: 13px;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+thead th {
+  padding: 10px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--app-text-muted);
+  background: var(--app-surface-2);
+  border-bottom: 1px solid var(--app-border);
+}
+
+tbody td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--app-border);
+  vertical-align: top;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.col-id { width: 60px; color: var(--app-text-muted); }
+
+.col-title { max-width: 420px; }
+.title-text { font-weight: 500; }
+.description-text {
+  color: var(--app-text-muted);
+  font-size: 12px;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 400px;
+}
+
+.col-date { color: var(--app-text-muted); white-space: nowrap; }
+
+.status-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.status-select {
+  background: var(--app-surface-2);
+  border: 1px solid var(--app-border);
+  border-radius: 4px;
+  color: var(--app-text);
+  padding: 4px 6px;
+  font-size: 12px;
+  font-family: inherit;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 16px;
+  color: var(--app-text-muted);
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 14px 16px;
+  border-top: 1px solid var(--app-border);
+  background: var(--app-surface-2);
+}
+
+.pager span {
+  font-size: 13px;
+  color: var(--app-text-muted);
+}
+
+.pager button {
+  background: var(--app-primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.pager button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

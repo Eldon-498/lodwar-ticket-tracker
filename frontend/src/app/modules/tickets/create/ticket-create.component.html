@@ -1,0 +1,46 @@
+<form [formGroup]="form" (ngSubmit)="submit()" class="create-form">
+  <div class="row">
+    <div class="field field-grow">
+      <label for="title">Title</label>
+      <input
+        id="title"
+        type="text"
+        formControlName="title"
+        placeholder="Printer offline on second floor"
+        [class.invalid]="title?.invalid && title?.touched"
+      />
+      @if (title?.invalid && title?.touched) {
+        <span class="error-msg">
+          @if (title?.errors?.['required']) { Title is required }
+          @else if (title?.errors?.['maxlength']) { Title must be at most 200 characters }
+        </span>
+      }
+    </div>
+
+    <div class="field field-fixed">
+      <label for="priority">Priority</label>
+      <select id="priority" formControlName="priority">
+        @for (p of priorities; track p) {
+          <option [value]="p">{{ p }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="description">Description <span class="optional">(optional)</span></label>
+    <textarea
+      id="description"
+      rows="2"
+      formControlName="description"
+      placeholder="Add any extra context"
+    ></textarea>
+  </div>
+
+  <div class="actions">
+    <button type="submit" [disabled]="isSubmitting">
+      @if (!isSubmitting) { <span>Create ticket</span> }
+      @if (isSubmitting) { <span>Creating…</span> }
+    </button>
+  </div>
+</form>

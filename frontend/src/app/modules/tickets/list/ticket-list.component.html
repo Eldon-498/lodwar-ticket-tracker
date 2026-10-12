@@ -1,0 +1,78 @@
+<div class="list-wrapper">
+  <div class="list-toolbar">
+    <div class="filter">
+      <label for="statusFilter">Status</label>
+      <select id="statusFilter" [value]="statusFilter"
+              (change)="onFilterChange($any($event.target).value)">
+        <option value="">All</option>
+        @for (s of statuses; track s) {
+          <option [value]="s">{{ s }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="count">
+      @if (!isLoading) { <span>{{ totalElements }} ticket{{ totalElements === 1 ? '' : 's' }}</span> }
+      @if (isLoading)  { <span>Loading…</span> }
+    </div>
+  </div>
+
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th class="col-id">#</th>
+          <th>Title</th>
+          <th>Priority</th>
+          <th>Status</th>
+          <th>Created</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (ticket of tickets; track ticket.id) {
+          <tr>
+            <td class="col-id">{{ ticket.id }}</td>
+            <td class="col-title">
+              <div class="title-text">{{ ticket.title }}</div>
+              @if (ticket.description) {
+                <div class="description-text">{{ ticket.description }}</div>
+              }
+            </td>
+            <td>
+              <span class="chip" [ngClass]="'chip-priority-' + ticket.priority.toLowerCase()">
+                {{ ticket.priority }}
+              </span>
+            </td>
+            <td>
+              <div class="status-cell">
+                <span class="chip" [ngClass]="'chip-status-' + ticket.status.toLowerCase()">
+                  {{ ticket.status }}
+                </span>
+                <select class="status-select" [value]="ticket.status"
+                        (change)="onStatusChange(ticket, $any($event.target).value)">
+                  @for (s of statuses; track s) {
+                    <option [value]="s">{{ s }}</option>
+                  }
+                </select>
+              </div>
+            </td>
+            <td class="col-date">{{ ticket.createdAt | date:'medium' }}</td>
+          </tr>
+        }
+        @if (!tickets.length && !isLoading) {
+          <tr>
+            <td colspan="5" class="empty-state">No tickets yet.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (totalPages > 1) {
+    <div class="pager">
+      <button type="button" (click)="prevPage()" [disabled]="page === 0">Previous</button>
+      <span>Page {{ page + 1 }} of {{ totalPages }}</span>
+      <button type="button" (click)="nextPage()" [disabled]="page >= totalPages - 1">Next</button>
+    </div>
+  }
+</div>
